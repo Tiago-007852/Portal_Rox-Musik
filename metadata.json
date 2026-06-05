@@ -1,0 +1,6 @@
+{
+  "name": "ROX-MUSIK",
+  "description": "O Blog da Banda - Portal de música angolano",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

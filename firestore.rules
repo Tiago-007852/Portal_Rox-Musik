@@ -1,0 +1,105 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global safety net (Default Deny Catch-all)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- REUSABLE PRIMITIVES ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+             isEmailVerified() &&
+             (request.auth.token.email == "tiagopw07@gmail.com" || request.auth.token.email == "nelmariotanganica@gmail.com");
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Validate a post structure
+    function isValidPost(post) {
+      return post.keys().hasAll(['id', 'titulo', 'artista', 'categoria', 'capa', 'descricao', 'linkDownload', 'destaque', 'data'])
+             && post.keys().size() <= 11 // 'produtor' and 'downloads' are optional
+             && post.id is string && post.id.size() <= 128
+             && post.titulo is string && post.titulo.size() <= 200
+             && post.artista is string && post.artista.size() <= 200
+             && post.categoria is string && post.categoria.size() <= 100
+             && post.capa is string && post.capa.size() <= 1000
+             && post.descricao is string && post.descricao.size() <= 5000
+             && post.linkDownload is string && post.linkDownload.size() <= 1000
+             && post.destaque is bool
+             && post.data is string && post.data.size() <= 15
+             && (!('produtor' in post) || (post.produtor is string && post.produtor.size() <= 200))
+             && (!('downloads' in post) || (post.downloads is int && post.downloads >= 0));
+    }
+
+    // Validate a category structure
+    function isValidCategory(cat) {
+      return cat.keys().hasAll(['id', 'nome', 'cor'])
+             && cat.keys().size() == 3
+             && cat.id is string && cat.id.size() <= 128
+             && cat.nome is string && cat.nome.size() <= 100
+             && cat.cor is string && cat.cor.size() <= 30;
+    }
+
+    // Validate a site configuration structure
+    function isValidSiteConfig(cfg) {
+      return cfg.keys().hasAll(['siteName', 'slogan', 'email', 'telefone', 'facebook', 'instagram', 'youtube', 'whatsapp', 'pinterest', 'accentColor'])
+             && cfg.keys().size() == 10
+             && cfg.siteName is string && cfg.siteName.size() <= 100
+             && cfg.slogan is string && cfg.slogan.size() <= 200
+             && cfg.email is string && cfg.email.size() <= 150
+             && cfg.telefone is string && cfg.telefone.size() <= 50
+             && cfg.facebook is string && cfg.facebook.size() <= 500
+             && cfg.instagram is string && cfg.instagram.size() <= 500
+             && cfg.youtube is string && cfg.youtube.size() <= 500
+             && cfg.whatsapp is string && cfg.whatsapp.size() <= 500
+             && cfg.pinterest is string && cfg.pinterest.size() <= 500
+             && cfg.accentColor is string && cfg.accentColor.size() <= 30;
+    }
+
+    // 2. Posts Collection
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(postId) && isValidPost(request.resource.data);
+      allow update: if (isAdmin() && isValidPost(request.resource.data))
+                    || (
+                      // Unauthenticated / public users can increment download count safely
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['downloads'])
+                      && request.resource.data.downloads == resource.data.downloads + 1
+                    );
+      allow delete: if isAdmin();
+    }
+
+    // 3. Categories Collection
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(categoryId) && isValidCategory(request.resource.data);
+      allow update: if isAdmin() && isValidCategory(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // 4. Config Document
+    match /config/site {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidSiteConfig(request.resource.data);
+      allow delete: if false; // Config document must never be deleted
+    }
+
+    // 5. Connection Test Document
+    match /test/{testId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
