@@ -25,7 +25,11 @@ export default function AdminLogin({ onLoginSuccess, config }: AdminLoginProps) 
       const metaEnv = (import.meta as any).env;
       const allowedUser = (metaEnv && metaEnv.VITE_ADMIN_USER) || "admin";
       const allowedPass = (metaEnv && metaEnv.VITE_ADMIN_PASS) || "roxmusik2025";
-      if (username === allowedUser && password === allowedPass) {
+      
+      const isSystemAdmin = username === allowedUser && password === allowedPass;
+      const isStefanyAdmin = username === "Stefany do Santos" && password === "Stefany-admin";
+
+      if (isSystemAdmin || isStefanyAdmin) {
         onLoginSuccess();
       } else {
         setError("Utilizador ou Senha inválidos. Tente novamente.");
@@ -40,7 +44,7 @@ export default function AdminLogin({ onLoginSuccess, config }: AdminLoginProps) 
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const email = result.user?.email || "";
-      const allowedEmails = ["tiagopw07@gmail.com", "nelmariotanganica@gmail.com"];
+      const allowedEmails = ["tiagopw07@gmail.com", "nelmariotanganica@gmail.com", "estefaniatinguita@gmail.com"];
       
       // Let any verified user through, or check for specific admin email list for extra safety
       if (allowedEmails.includes(email.toLowerCase()) || result.user?.emailVerified) {
