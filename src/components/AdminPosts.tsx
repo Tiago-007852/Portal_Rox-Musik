@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Post, Category } from "../types";
-import { PlusCircle, Edit, Trash2, Search, ArrowLeft, Image as ImageIcon, Sparkles, Check, ExternalLink } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Search, ArrowLeft, Image as ImageIcon, Sparkles, Check, ExternalLink, Upload } from "lucide-react";
 
 interface AdminPostsProps {
   posts: Post[];
@@ -37,6 +37,58 @@ export default function AdminPosts({
   // General Filter
   const [searchTable, setSearchTable] = useState("");
   const [filterCategory, setFilterCategory] = useState("TODAS");
+
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 500;
+        const MAX_HEIGHT = 500;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.75);
+          setCapa(compressedBase64);
+        }
+        setUploadingImage(false);
+      };
+      img.onerror = () => {
+        setUploadingImage(false);
+        alert("Erro ao carregar a imagem para processamento.");
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      setUploadingImage(false);
+      alert("Erro ao ler o ficheiro.");
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleOpenNew = () => {
     setEditingPost(null);
@@ -83,8 +135,8 @@ export default function AdminPosts({
       return;
     }
 
-    if (capa.trim() && !capa.trim().startsWith("http://") && !capa.trim().startsWith("https://")) {
-      alert("Por favor, insira um URL de imagem válido (começando com http:// ou https://).");
+    if (capa.trim() && !capa.trim().startsWith("http://") && !capa.trim().startsWith("https://") && !capa.trim().startsWith("data:image/")) {
+      alert("Por favor, insira um URL de imagem válido ou faça upload.");
       return;
     }
 
@@ -271,29 +323,56 @@ export default function AdminPosts({
             {/* URL da imagem de capa */}
             <div className="space-y-1.5">
               <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-0.5">
-                URL da Imagem de Capa
+                URL ou Upload de Imagem de Capa
               </label>
-              <input
-                type="url"
-                placeholder="Ex: https://images.unsplash.com/... ou Imgur URL"
-                value={capa}
-                onChange={(e) => setCapa(e.target.value)}
-                className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400 font-mono"
-              />
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  placeholder="Ex: https://... ou faça upload usando o botão ao lado"
+                  value={capa}
+                  onChange={(e) => setCapa(e.target.value)}
+                  className="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400 font-mono"
+                />
+                
+                <label className="flex items-center justify-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-zinc-300 hover:text-white hover:bg-[#252525] hover:border-emerald-500/50 rounded cursor-pointer select-none font-bold transition-all shrink-0">
+                  <Upload size={14} className={uploadingImage ? "animate-spin text-emerald-400" : ""} />
+                  {uploadingImage ? "A carregar..." : "Carregar Foto"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
               <p className="text-[9px] text-zinc-500 uppercase tracking-widest">
-                👉 Cole o URL completo de uma imagem de blog ou deixe em branco para preencher com capa padrão.
+                👉 Cole um URL ou clique em <strong>Carregar Foto</strong> para escolher um arquivo do seu dispositivo. Ele será redimensionado automaticamente.
               </p>
               {capa.trim() && (
-                <div className="p-3 bg-black/40 rounded border border-[#2a2a2a] flex items-center gap-3 w-max">
-                  <img
-                    src={capa}
-                    alt="Preview de Capa"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = "none";
-                    }}
-                    className="w-12 h-12 object-cover rounded border border-[#2a2a2a]"
-                  />
-                  <span className="text-[10px] text-zinc-400 uppercase font-bold font-mono">Pré-visualização</span>
+                <div className="p-3 bg-black/40 rounded border border-[#2a2a2a] flex items-center justify-between gap-3 w-max max-w-full">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={capa}
+                      alt="Preview de Capa"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                      className="w-12 h-12 object-cover rounded border border-[#2a2a2a]"
+                    />
+                    <div>
+                      <span className="block text-[10px] text-zinc-400 uppercase font-bold font-mono">Pré-visualização</span>
+                      <span className="block text-[9px] text-zinc-550 max-w-[200px] truncate">{capa.startsWith("data:") ? "Foto Carregada (Base64)" : capa}</span>
+                    </div>
+                  </div>
+                  {capa.startsWith("data:") && (
+                    <button
+                      type="button"
+                      onClick={() => setCapa("")}
+                      className="text-[9px] text-red-400 hover:text-red-300 font-bold uppercase transition-colors px-2 py-1 rounded bg-[#201010]"
+                    >
+                      Limpar
+                    </button>
+                  )}
                 </div>
               )}
             </div>
