@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Image as ImageIcon, Link2, Copy, Trash2, PlusCircle, CheckCircle } from "lucide-react";
+import { Image as ImageIcon, Link2, Copy, Trash2, PlusCircle, CheckCircle, Upload } from "lucide-react";
 import { Post } from "../types";
 
 interface AdminGalleryProps {
@@ -11,6 +11,57 @@ export default function AdminGallery({ posts, config }: AdminGalleryProps) {
   const [galleryList, setGalleryList] = useState<string[]>([]);
   const [newUrl, setNewUrl] = useState("");
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 500;
+        const MAX_HEIGHT = 500;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.75);
+          setNewUrl(compressedBase64);
+        }
+        setUploadingImage(false);
+      };
+      img.onerror = () => {
+        setUploadingImage(false);
+        alert("Erro ao carregar a imagem.");
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      setUploadingImage(false);
+      alert("Erro ao ler arquivo.");
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Initialize and load custom gallery alongside image URLs currently in use
   useEffect(() => {
@@ -81,16 +132,28 @@ export default function AdminGallery({ posts, config }: AdminGalleryProps) {
         <form onSubmit={handleAddImage} className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
           <div className="md:col-span-2 space-y-2">
             <label className="block text-[10px] uppercase font-bold tracking-widest text-[#aaaaaa]">
-              URL da Capa
+              URL ou Upload da Capa
             </label>
-            <input
-              type="url"
-              placeholder="Cole o URL de uma imagem (ex: Unsplash, Imgur, etc.)"
-              value={newUrl}
-              onChange={(e) => setNewUrl(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2.5 rounded-lg focus:outline-none focus:border-emerald-400 transition-all"
-              required
-            />
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                placeholder="Cole o URL de uma imagem ou utilize o botão para fazer upload"
+                value={newUrl}
+                onChange={(e) => setNewUrl(e.target.value)}
+                className="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2.5 rounded-lg focus:outline-none focus:border-emerald-400 transition-all font-mono"
+                required
+              />
+              <label className="flex items-center justify-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-zinc-300 hover:text-white hover:bg-[#252525] hover:border-emerald-500/50 rounded cursor-pointer select-none font-bold transition-all shrink-0">
+                <Upload size={14} className={uploadingImage ? "animate-spin text-emerald-400" : ""} />
+                {uploadingImage ? "Processando..." : "Carregar Foto"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
           </div>
           <button
             type="submit"
@@ -101,8 +164,8 @@ export default function AdminGallery({ posts, config }: AdminGalleryProps) {
           </button>
         </form>
 
-        {/* Live Preview block if URL is semi-valid */}
-        {newUrl.trim() && /^https?:\/\/.+/.test(newUrl) && (
+        {/* Live Preview block if URL/Base64 is semi-valid */}
+        {newUrl.trim() && (/^https?:\/\/.+/.test(newUrl) || newUrl.startsWith("data:image/")) && (
           <div className="mt-4 p-3 bg-[#1a1a1a] rounded-lg border border-[#2a2a2a] flex items-center gap-4">
             <img
               src={newUrl}
@@ -112,9 +175,9 @@ export default function AdminGallery({ posts, config }: AdminGalleryProps) {
               }}
               className="w-14 h-14 object-cover rounded border border-[#2a2a2a]"
             />
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-[10px] text-[#00e5a0] font-black uppercase tracking-wider">Pré-visualização Disponível</p>
-              <p className="text-[10px] text-zinc-400 truncate max-w-sm font-mono mt-0.5">{newUrl}</p>
+              <p className="text-[10px] text-zinc-400 truncate max-w-sm font-mono mt-0.5">{newUrl.startsWith("data:") ? "Foto Carregada (Base64)" : newUrl}</p>
             </div>
           </div>
         )}
