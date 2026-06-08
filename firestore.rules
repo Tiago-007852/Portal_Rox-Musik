@@ -19,7 +19,9 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() &&
              isEmailVerified() &&
-             (request.auth.token.email == "tiagopw07@gmail.com" || request.auth.token.email == "nelmariotanganica@gmail.com");
+             (request.auth.token.email == "tiagopw07@gmail.com" || 
+              request.auth.token.email == "nelmariotanganica@gmail.com" || 
+              request.auth.token.email == "estefaniatinguita@gmail.com");
     }
 
     function isValidId(id) {
@@ -34,7 +36,7 @@ service cloud.firestore {
              && post.titulo is string && post.titulo.size() <= 200
              && post.artista is string && post.artista.size() <= 200
              && post.categoria is string && post.categoria.size() <= 100
-             && post.capa is string && post.capa.size() <= 1000
+             && post.capa is string && post.capa.size() <= 150000
              && post.descricao is string && post.descricao.size() <= 5000
              && post.linkDownload is string && post.linkDownload.size() <= 1000
              && post.destaque is bool
