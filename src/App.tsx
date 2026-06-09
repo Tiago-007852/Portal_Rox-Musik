@@ -88,7 +88,17 @@ export default function App() {
           fetchPosts()
         ]);
         setConfig(loadedConfig);
-        setCategories(loadedCategories);
+        
+        // Merge loaded categories with default ones so Rap, Kuduro, Love are instantly available
+        const mergedCategories = [...loadedCategories];
+        for (const defCat of DEFAULT_CATEGORIES) {
+          if (!mergedCategories.some(c => c.id === defCat.id || c.nome.toUpperCase() === defCat.nome.toUpperCase())) {
+            mergedCategories.push(defCat);
+          }
+        }
+        setCategories(mergedCategories);
+        localStorage.setItem("rox_categories", JSON.stringify(mergedCategories));
+        
         setPosts(loadedPosts);
       } catch (err) {
         console.error("Erro ao carregar do Firestore: ", err);
