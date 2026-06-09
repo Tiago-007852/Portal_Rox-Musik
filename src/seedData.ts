@@ -6,7 +6,10 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: "zoukland", nome: "ZOUK", cor: "#e74c3c" },
   { id: "album", nome: "ÁLBUM", cor: "#00e5a0" },
   { id: "mixtape", nome: "MIXTAPE", cor: "#f39c12" },
-  { id: "ep", nome: "EP", cor: "#3498db" }
+  { id: "ep", nome: "EP", cor: "#3498db" },
+  { id: "rap", nome: "RAP", cor: "#9c88ff" },
+  { id: "kuduro", nome: "KUDURO", cor: "#f5cd79" },
+  { id: "love", nome: "LOVE", cor: "#fd79a8" }
 ];
 
 export const DEFAULT_CONFIG: SiteConfig = {
