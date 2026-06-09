@@ -31,12 +31,12 @@ service cloud.firestore {
     // Validate a post structure
     function isValidPost(post) {
       return post.keys().hasAll(['id', 'titulo', 'artista', 'categoria', 'capa', 'descricao', 'linkDownload', 'destaque', 'data'])
-             && post.keys().size() <= 11 // 'produtor' and 'downloads' are optional
+             && post.keys().size() <= 12 // 'produtor' and 'downloads' are optional, allowing safety margin
              && post.id is string && post.id.size() <= 128
              && post.titulo is string && post.titulo.size() <= 200
              && post.artista is string && post.artista.size() <= 200
              && post.categoria is string && post.categoria.size() <= 100
-             && post.capa is string && post.capa.size() <= 150000
+             && post.capa is string && post.capa.size() <= 1000000
              && post.descricao is string && post.descricao.size() <= 5000
              && post.linkDownload is string && post.linkDownload.size() <= 1000
              && post.destaque is bool
