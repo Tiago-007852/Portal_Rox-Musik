@@ -88,10 +88,10 @@ export default function PostPage({
                 className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded"
                 style={{ backgroundColor: `${badgeColor}20`, color: badgeColor }}
               >
-                {post.categoria}
+                {post.tipo && post.tipo !== "musica" ? post.tipo.toUpperCase() : post.categoria}
               </span>
               <span className="text-[10px] text-[#aaaaaa] font-mono">
-                Lançado em {post.data}
+                {post.tipo && post.tipo !== "musica" ? "Publicado em" : "Lançado em"} {post.data}
               </span>
             </div>
 
@@ -100,41 +100,89 @@ export default function PostPage({
               <h1 className="text-2xl sm:text-4xl font-black font-display text-white tracking-widest uppercase leading-snug">
                 {post.titulo}
               </h1>
-              <p className="text-md sm:text-xl font-bold flex items-center gap-1.5 animate-fade-in" style={{ color: config.accentColor }}>
-                <User size={16} />
-                {post.artista}
-              </p>
-              {post.produtor && (
-                <p className="text-[11px] text-zinc-450 uppercase font-black tracking-widest mt-1">
-                  Produtor: <span className="text-zinc-300 font-bold">{post.produtor}</span>
+              {post.tipo && post.tipo !== "musica" ? (
+                <div className="space-y-2 pt-1">
+                  {post.artista && (
+                    <p className="text-sm text-zinc-300 font-bold">
+                      Assunto/Artista: <span style={{ color: config.accentColor }}>{post.artista}</span>
+                    </p>
+                  )}
+                  {post.autor && (
+                    <p className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider">
+                      Por: <span className="text-zinc-200 font-bold">{post.autor}</span>
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-md sm:text-xl font-bold flex items-center gap-1.5 animate-fade-in" style={{ color: config.accentColor }}>
+                  <User size={16} />
+                  {post.artista}
                 </p>
               )}
+              {!post.tipo || post.tipo === "musica" ? (
+                post.produtor && (
+                  <p className="text-[11px] text-zinc-450 uppercase font-black tracking-widest mt-1">
+                    Produtor: <span className="text-zinc-300 font-bold">{post.produtor}</span>
+                  </p>
+                )
+              ) : null}
             </div>
           </div>
 
-          {/* Description details content */}
+          {/* News Subtitle if any */}
+          {post.tipo && post.tipo !== "musica" && post.subtitulo && (
+            <div className="border-l-4 border-emerald-500/50 pl-4 py-1">
+              <p className="text-zinc-400 text-xs sm:text-sm font-semibold italic leading-relaxed">
+                "{post.subtitulo}"
+              </p>
+            </div>
+          )}
+
+          {/* Description / Content details */}
           <div className="bg-[#111] border border-[#2a2a2a] rounded-xl p-5 space-y-3.5">
-            <h3 className="text-[10px] font-black tracking-widest uppercase text-[#aaaaaa]">Descrição / Ficha Técnica</h3>
+            <h3 className="text-[10px] font-black tracking-widest uppercase text-[#aaaaaa]">
+              {post.tipo && post.tipo !== "musica" ? "Conteúdo da Matéria" : "Descrição / Ficha Técnica"}
+            </h3>
             <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed whitespace-pre-line font-sans">
-              {post.descricao || "Nenhuma descrição adicional foi fornecida para este trabalho musical."}
+              {post.tipo && post.tipo !== "musica" 
+                ? (post.conteudo || post.descricao || "Sem mais detalhes disponíveis para este artigo.") 
+                : (post.descricao || "Nenhuma descrição adicional foi fornecida para este trabalho musical.")}
             </p>
           </div>
 
-          {/* BIG Download promotional CTA */}
-          <a
-            href={post.linkDownload.trim().startsWith("http://") || post.linkDownload.trim().startsWith("https://") ? post.linkDownload.trim() : `https://${post.linkDownload.trim()}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              e.preventDefault();
-              const url = post.linkDownload.trim().startsWith("http://") || post.linkDownload.trim().startsWith("https://") ? post.linkDownload.trim() : `https://${post.linkDownload.trim()}`;
-              window.open(url, "_blank");
-            }}
-            className="flex items-center justify-center gap-2.5 w-full bg-[#00e5a0] text-black font-display font-black tracking-widest text-xs py-4.5 rounded-xl uppercase hover:scale-[1.01] hover:bg-emerald-300 active:scale-[0.99] transition-all cursor-pointer text-center leading-none"
-            style={{ backgroundColor: config.accentColor }}
-          >
-            <ArrowDownToLine size={16} strokeWidth={2.5} /> Baixar Música / Ouvir Streaming
-          </a>
+          {/* BIG Download promotional CTA - ONLY renders if type is music or undefined */}
+          {(!post.tipo || post.tipo === "musica") ? (
+            <a
+              href={post.linkDownload.trim().startsWith("http://") || post.linkDownload.trim().startsWith("https://") ? post.linkDownload.trim() : `https://${post.linkDownload.trim()}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.preventDefault();
+                const url = post.linkDownload.trim().startsWith("http://") || post.linkDownload.trim().startsWith("https://") ? post.linkDownload.trim() : `https://${post.linkDownload.trim()}`;
+                window.open(url, "_blank");
+              }}
+              className="flex items-center justify-center gap-2.5 w-full bg-[#00e5a0] text-black font-display font-black tracking-widest text-xs py-4.5 rounded-xl uppercase hover:scale-[1.01] hover:bg-emerald-300 active:scale-[0.99] transition-all cursor-pointer text-center leading-none"
+              style={{ backgroundColor: config.accentColor }}
+            >
+              <ArrowDownToLine size={16} strokeWidth={2.5} /> Baixar Música / Ouvir Streaming
+            </a>
+          ) : (
+            post.linkDownload && post.linkDownload.trim() !== "" && post.linkDownload !== "#" && (
+              <a
+                href={post.linkDownload.trim().startsWith("http://") || post.linkDownload.trim().startsWith("https://") ? post.linkDownload.trim() : `https://${post.linkDownload.trim()}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const url = post.linkDownload.trim().startsWith("http://") || post.linkDownload.trim().startsWith("https://") ? post.linkDownload.trim() : `https://${post.linkDownload.trim()}`;
+                  window.open(url, "_blank");
+                }}
+                className="flex items-center justify-center gap-2 p-3 bg-zinc-900 border border-[#2a2a2a] text-xs font-bold text-zinc-350 hover:text-white hover:bg-zinc-800 transition-all rounded-lg cursor-pointer"
+              >
+                Visitar Link de Referência / Fonte de Informação
+              </a>
+            )
+          )}
 
           {/* Share links deck element */}
           <div className="bg-[#111] border border-[#2a2a2a] rounded-xl p-5 space-y-3">
