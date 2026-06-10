@@ -32,8 +32,9 @@ export default function CategoryPage({
   );
   const activeColor = catInfo ? catInfo.cor : config.accentColor;
 
-  // Filter posts
-  const filteredPosts = posts
+  // Filter posts (only music posts in category listing)
+  const musicPosts = posts.filter((p) => !p.tipo || p.tipo === "musica");
+  const filteredPosts = musicPosts
     .filter((p) => p.categoria.toUpperCase() === categoryName.toUpperCase())
     .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
 
