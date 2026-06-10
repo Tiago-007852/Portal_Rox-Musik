@@ -31,7 +31,7 @@ service cloud.firestore {
     // Validate a post structure
     function isValidPost(post) {
       return post.keys().hasAll(['id', 'titulo', 'artista', 'categoria', 'capa', 'descricao', 'linkDownload', 'destaque', 'data'])
-             && post.keys().size() <= 12 // 'produtor' and 'downloads' are optional, allowing safety margin
+             && post.keys().size() <= 16 // 'produtor', 'downloads', 'tipo', 'subtitulo', 'autor', 'conteudo' are optional
              && post.id is string && post.id.size() <= 128
              && post.titulo is string && post.titulo.size() <= 200
              && post.artista is string && post.artista.size() <= 200
@@ -42,7 +42,11 @@ service cloud.firestore {
              && post.destaque is bool
              && post.data is string && post.data.size() <= 15
              && (!('produtor' in post) || (post.produtor is string && post.produtor.size() <= 200))
-             && (!('downloads' in post) || (post.downloads is int && post.downloads >= 0));
+             && (!('downloads' in post) || (post.downloads is int && post.downloads >= 0))
+             && (!('tipo' in post) || (post.tipo is string && post.tipo.size() <= 50))
+             && (!('subtitulo' in post) || (post.subtitulo is string && post.subtitulo.size() <= 500))
+             && (!('autor' in post) || (post.autor is string && post.autor.size() <= 100))
+             && (!('conteudo' in post) || (post.conteudo is string && post.conteudo.size() <= 20000));
     }
 
     // Validate a category structure
