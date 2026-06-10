@@ -23,6 +23,7 @@ import HomePage from "./components/HomePage";
 import CategoryPage from "./components/CategoryPage";
 import PostPage from "./components/PostPage";
 import SearchPage from "./components/SearchPage";
+import NewsPage from "./components/NewsPage";
 
 // Security credential admin gates
 import AdminLogin from "./components/AdminLogin";
@@ -147,6 +148,10 @@ export default function App() {
       } else if (hash.startsWith("#/post/")) {
         const id = decodeURIComponent(hash.replace("#/post/", ""));
         setCurrentRoute({ name: "post", param: id });
+      } else if (hash === "#/noticias") {
+        setCurrentRoute({ name: "noticias" });
+      } else if (hash === "#/entretenimento") {
+        setCurrentRoute({ name: "entretenimento" });
       } else if (hash === "#/admin") {
         setCurrentRoute({ name: "admin" });
       } else if (hash === "#/404") {
@@ -175,6 +180,10 @@ export default function App() {
       window.location.hash = `/categoria/${param}`;
     } else if (routeName === "post" && param) {
       window.location.hash = `/post/${param}`;
+    } else if (routeName === "noticias") {
+      window.location.hash = "/noticias";
+    } else if (routeName === "entretenimento") {
+      window.location.hash = "/entretenimento";
     } else if (routeName === "admin") {
       window.location.hash = "/admin";
     } else if (routeName === "not-found") {
@@ -387,6 +396,26 @@ export default function App() {
             categories={categories}
             onPostClick={handlePostClick}
             config={config}
+            navigate={navigate}
+          />
+        );
+      case "noticias":
+        return (
+          <NewsPage
+            tipo="noticia"
+            posts={posts}
+            config={config}
+            onPostClick={handlePostClick}
+            navigate={navigate}
+          />
+        );
+      case "entretenimento":
+        return (
+          <NewsPage
+            tipo="entretenimento"
+            posts={posts}
+            config={config}
+            onPostClick={handlePostClick}
             navigate={navigate}
           />
         );
