@@ -24,11 +24,15 @@ export default function AdminPosts({
   const [saving, setSaving] = useState(false);
 
   // Form states
+  const [tipo, setTipo] = useState<"musica" | "noticia" | "entretenimento">("musica");
   const [titulo, setTitulo] = useState("");
   const [artista, setArtista] = useState("");
   const [produtor, setProdutor] = useState("");
   const [categoria, setCategoria] = useState(categories[0]?.nome || "AFRO HOUSE");
   const [capa, setCapa] = useState("");
+  const [subtitulo, setSubtitulo] = useState("");
+  const [autor, setAutor] = useState("");
+  const [conteudo, setConteudo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [linkDownload, setLinkDownload] = useState("");
   const [destaque, setDestaque] = useState(false);
@@ -92,11 +96,15 @@ export default function AdminPosts({
 
   const handleOpenNew = () => {
     setEditingPost(null);
+    setTipo("musica");
     setTitulo("");
     setArtista("");
     setProdutor("");
     setCategoria(categories[0]?.nome || "AFRO HOUSE");
     setCapa("");
+    setSubtitulo("");
+    setAutor("");
+    setConteudo("");
     setDescricao("");
     setLinkDownload("");
     setDestaque(false);
@@ -106,13 +114,17 @@ export default function AdminPosts({
 
   const handleStartEdit = (post: Post) => {
     setEditingPost(post);
+    setTipo(post.tipo || "musica");
     setTitulo(post.titulo);
     setArtista(post.artista);
     setProdutor(post.produtor || "");
     setCategoria(post.categoria);
     setCapa(post.capa);
+    setSubtitulo(post.subtitulo || "");
+    setAutor(post.autor || "");
+    setConteudo(post.conteudo || "");
     setDescricao(post.descricao);
-    setLinkDownload(post.linkDownload);
+    setLinkDownload(post.linkDownload || "");
     setDestaque(post.destaque);
     setData(post.data);
     setIsFormOpen(true);
@@ -125,13 +137,27 @@ export default function AdminPosts({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!titulo.trim() || !artista.trim() || !linkDownload.trim()) {
-      alert("Por favor, preencha todos os campos obrigatórios (*).");
-      return;
+    
+    const isMusic = tipo === "musica";
+    
+    if (isMusic) {
+      if (!titulo.trim() || !artista.trim() || !linkDownload.trim()) {
+        alert("Por favor, preencha todos os campos obrigatórios (*): Título, Artista e Link de Download.");
+        return;
+      }
+    } else {
+      if (!titulo.trim()) {
+        alert("Por favor, preencha o Título do Post/Artigo (*).");
+        return;
+      }
+      if (!conteudo.trim() && !descricao.trim()) {
+        alert("Por favor, insira o Conteúdo Completo do Artigo (*).");
+        return;
+      }
     }
 
     if (descricao.length > 1000) {
-      alert("A descrição ou tracklist excede o limite máximo de 1000 caracteres.");
+      alert("A descrição excede o limite máximo de 1000 caracteres.");
       return;
     }
 
@@ -142,14 +168,18 @@ export default function AdminPosts({
 
     const postData = {
       titulo,
-      artista,
-      produtor: produtor.trim() || undefined,
+      artista: artista.trim() || "Diversos",
+      produtor: isMusic ? (produtor.trim() || undefined) : undefined,
       categoria,
       capa: capa.trim() || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop",
-      descricao,
-      linkDownload,
+      descricao: isMusic ? descricao : (subtitulo || descricao || conteudo.slice(0, 150) + "..."),
+      linkDownload: linkDownload.trim(),
       destaque,
-      data
+      data,
+      tipo,
+      subtitulo: isMusic ? undefined : subtitulo.trim(),
+      autor: isMusic ? undefined : autor.trim(),
+      conteudo: isMusic ? undefined : conteudo.trim()
     };
 
     setSaving(true);
@@ -228,52 +258,144 @@ export default function AdminPosts({
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Título de música */}
+            
+            {/* Seletor de Tipo de Post */}
+            <div className="bg-[#181818] p-3.5 rounded-xl border border-[#2a2a2a] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
               <div>
-                <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
-                  Título da Música/Álbum *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Noite de Luanda"
-                  value={titulo}
-                  onChange={(e) => setTitulo(e.target.value)}
-                  className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400"
-                />
+                <span className="block text-[10px] uppercase font-black tracking-widest text-[#aaaaaa]">Foco do Conteúdo</span>
+                <span className="text-[11px] text-zinc-400 font-sans">Selecione o tipo de publicação que deseja criar</span>
               </div>
-
-              {/* Nome do artista */}
-              <div>
-                <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
-                  Nome do Artista *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: DJ Nelinho"
-                  value={artista}
-                  onChange={(e) => setArtista(e.target.value)}
-                  className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400"
-                />
-              </div>
-
-              {/* Produtor */}
-              <div>
-                <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
-                  Produtor (Opcional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ex: DJ Nelinho, Beat by Mamona"
-                  value={produtor}
-                  onChange={(e) => setProdutor(e.target.value)}
-                  className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400"
-                />
+              <div className="flex bg-black/40 p-1.5 rounded-lg border border-[#2a2a2a] w-full sm:w-auto">
+                {(["musica", "noticia", "entretenimento"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTipo(t)}
+                    className="flex-1 sm:flex-none text-center px-4 py-1.5 rounded text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer"
+                    style={{
+                      color: tipo === t ? config.accentColor : "#aaaaaa",
+                      backgroundColor: tipo === t ? `${config.accentColor}15` : "transparent"
+                    }}
+                  >
+                    {t === "musica" ? "Música" : t === "noticia" ? "Notícia" : "Entretenimento"}
+                  </button>
+                ))}
               </div>
             </div>
 
+            {/* CONDITIONAL CONTROLS */}
+            {tipo === "musica" ? (
+              /* MUSIC FIELDS FORM DESIGN */
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Título de música */}
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
+                    Título da Música/Álbum *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Noite de Luanda"
+                    value={titulo}
+                    onChange={(e) => setTitulo(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400"
+                  />
+                </div>
+
+                {/* Nome do artista */}
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
+                    Nome do Artista *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: DJ Nelinho"
+                    value={artista}
+                    onChange={(e) => setArtista(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400"
+                  />
+                </div>
+
+                {/* Produtor */}
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
+                    Produtor (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: DJ Nelinho, Beat by Mamona"
+                    value={produtor}
+                    onChange={(e) => setProdutor(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400"
+                  />
+                </div>
+              </div>
+            ) : (
+              /* NEWS / ENTERTAINMENT FIELDS DESIGN */
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {/* Título do artigo */}
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
+                      Título da Matéria / Artigo *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ex: Novo Álbum de Anselmo Ralph a caminho"
+                      value={titulo}
+                      onChange={(e) => setTitulo(e.target.value)}
+                      className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400"
+                    />
+                  </div>
+
+                  {/* Artista relacionado */}
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
+                      Artista / Assunto (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Anselmo Ralph"
+                      value={artista}
+                      onChange={(e) => setArtista(e.target.value)}
+                      className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400"
+                    />
+                  </div>
+
+                  {/* Autor / Fonte */}
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
+                      Autor / Fonte (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Redação ROX"
+                      value={autor}
+                      onChange={(e) => setAutor(e.target.value)}
+                      className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400"
+                    />
+                  </div>
+                </div>
+
+                {/* Subtítulo / Lead */}
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
+                    Subtítulo / Lead do Artigo (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Uma frase marcante resumindo a notícia que aparece sob o título..."
+                    value={subtitulo}
+                    onChange={(e) => setSubtitulo(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* COMMON FIELDS SECTION */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Categoria list */}
               <div>
@@ -283,7 +405,7 @@ export default function AdminPosts({
                 <select
                   value={categoria}
                   onChange={(e) => setCategoria(e.target.value)}
-                  className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-2.5 py-2.5 rounded focus:outline-none focus:border-emerald-400 font-bold uppercase tracking-wide"
+                  className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-2.5 py-2.5 rounded focus:outline-none focus:border-emerald-400 font-bold uppercase tracking-wide cursor-pointer"
                 >
                   {categories.map((c) => (
                     <option key={c.id} value={c.nome}>
@@ -313,7 +435,8 @@ export default function AdminPosts({
                     type="checkbox"
                     checked={destaque}
                     onChange={(e) => setDestaque(e.target.checked)}
-                    className="w-4.5 h-4.5 accent-emerald-400 rounded cursor-pointer"
+                    className="w-4.5 h-4.5 rounded cursor-pointer"
+                    style={{ accentColor: config.accentColor }}
                   />
                   <span>Destaque (Hero Banner)</span>
                 </label>
@@ -323,7 +446,7 @@ export default function AdminPosts({
             {/* URL da imagem de capa */}
             <div className="space-y-1.5">
               <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-0.5">
-                URL ou Upload de Imagem de Capa
+                Capa / Imagem de Destaque
               </label>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
@@ -334,7 +457,7 @@ export default function AdminPosts({
                   className="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400 font-mono"
                 />
                 
-                <label className="flex items-center justify-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-zinc-300 hover:text-white hover:bg-[#252525] hover:border-emerald-500/50 rounded cursor-pointer select-none font-bold transition-all shrink-0">
+                <label className="flex items-center justify-center gap-2 px-4 py-2 bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-zinc-300 hover:text-white hover:bg-[#252525] hover:border-[#383838] rounded cursor-pointer select-none font-bold transition-all shrink-0">
                   <Upload size={14} className={uploadingImage ? "animate-spin text-emerald-400" : ""} />
                   {uploadingImage ? "A carregar..." : "Carregar Foto"}
                   <input
@@ -377,78 +500,117 @@ export default function AdminPosts({
               )}
             </div>
 
-            {/* Link download / Streaming */}
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
-                Link de Download / Streaming *
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Cole link do OneDrive, MediaFire, Spotify, YouTube..."
-                  value={linkDownload}
-                  onChange={(e) => setLinkDownload(e.target.value)}
-                  className="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400 font-mono"
-                />
-                {linkDownload.trim() && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const urlStr = linkDownload.trim();
-                      const testUrl = urlStr.startsWith("http://") || urlStr.startsWith("https://") ? urlStr : `https://${urlStr}`;
-                      window.open(testUrl, '_blank');
-                    }}
-                    className="p-2 bg-[#1a1a1a] hover:bg-[#252525] border border-[#2a2a2a] hover:border-zinc-500 text-zinc-300 hover:text-white rounded transition-colors cursor-pointer"
-                    title="Testar Link de Download"
-                  >
-                    <ExternalLink size={14} />
-                  </button>
-                )}
-              </div>
-              {serviceBadge && (
-                <div className="mt-1.5 flex items-center gap-1.5">
-                  <span className="text-[9px] text-[#aaaaaa] uppercase font-black tracking-widest">Serviço:</span>
-                  <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded leading-none ${serviceBadge.style}`}>
-                    {serviceBadge.name}
-                  </span>
+            {/* CONDITIONAL ACTION LINKS & CONTENT TEXTAREAS */}
+            {tipo === "musica" ? (
+              /* MUSIC LINK AND DESCRIPTION WORKFLOW */
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1 font-sans">
+                    Link de Download / Streaming *
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ex: Cole link do OneDrive, MediaFire, Spotify, YouTube..."
+                      value={linkDownload}
+                      onChange={(e) => setLinkDownload(e.target.value)}
+                      className="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400 font-mono"
+                    />
+                    {linkDownload.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const urlStr = linkDownload.trim();
+                          const testUrl = urlStr.startsWith("http://") || urlStr.startsWith("https://") ? urlStr : `https://${urlStr}`;
+                          window.open(testUrl, '_blank');
+                        }}
+                        className="p-2 bg-[#1a1a1a] hover:bg-[#252525] border border-[#2a2a2a] hover:border-zinc-500 text-zinc-300 hover:text-white rounded transition-colors cursor-pointer"
+                        title="Testar Link de Download"
+                      >
+                        <ExternalLink size={14} />
+                      </button>
+                    )}
+                  </div>
+                  {serviceBadge && (
+                    <div className="mt-1.5 flex items-center gap-1.5">
+                      <span className="text-[9px] text-[#aaaaaa] uppercase font-black tracking-widest">Serviço:</span>
+                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded leading-none ${serviceBadge.style}`}>
+                        {serviceBadge.name}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            {/* Descrição / Tracklist text box */}
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
-                Descrição ou Tracklist (Álbuns/EPs)
-              </label>
-              <textarea
-                rows={4}
-                placeholder="Descrição literária, letras ou tracklist completa das músicas..."
-                value={descricao}
-                onChange={(e) => setDescricao(e.target.value)}
-                className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400 font-sans"
-              />
-              <div className="flex justify-between items-center mt-1">
-                <span className="text-[9px] text-zinc-500 uppercase tracking-widest">
-                  Suporta notas do produtor e tracklist.
-                </span>
-                <span className={`text-[10px] font-mono font-black uppercase tracking-wider ${
-                  descricao.length > 1000 ? "text-red-500" : descricao.length > 800 ? "text-orange-500" : "text-zinc-500"
-                }`}>
-                  {descricao.length} / 1000 caracteres
-                </span>
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
+                    Descrição ou Tracklist (Álbuns/EPs)
+                  </label>
+                  <textarea
+                    rows={4}
+                    placeholder="Descrição literária, letras ou tracklist completa das músicas..."
+                    value={descricao}
+                    onChange={(e) => setDescricao(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400 font-sans"
+                  />
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-[9px] text-zinc-500 uppercase tracking-widest">
+                      Suporta notas do produtor e tracklist.
+                    </span>
+                    <span className={`text-[10px] font-mono font-black uppercase tracking-wider ${
+                      descricao.length > 1000 ? "text-red-500" : descricao.length > 800 ? "text-orange-500" : "text-zinc-500"
+                    }`}>
+                      {descricao.length} / 1000 caracteres
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              /* ARTICLES DESCRIPTION/CONTENT WORKFLOW */
+              <div className="space-y-4 animate-fade-in">
+                {/* Optional extern link for more info */}
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
+                    Link de Referência / Fonte Adicional (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Link de uma matéria de referência ou post de rede social..."
+                    value={linkDownload}
+                    onChange={(e) => setLinkDownload(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-2 rounded focus:outline-none focus:border-emerald-400 font-mono"
+                  />
+                </div>
+
+                {/* Conteúdo completo */}
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-[#aaaaaa] tracking-widest mb-1">
+                    Conteúdo Completo do Artigo / Matéria *
+                  </label>
+                  <textarea
+                    rows={8}
+                    required
+                    placeholder="Escreva a notícia detalhadamente..."
+                    value={conteudo}
+                    onChange={(e) => setConteudo(e.target.value)}
+                    className="w-full bg-[#1a1a1a] border border-[#2a2a2a] text-xs text-white px-3 py-3 rounded focus:outline-none focus:border-emerald-400 font-sans leading-relaxed"
+                  />
+                  <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-1">
+                    📖 Este texto será renderizado detalhadamente na página do artigo. Use quebras de linha para formatar os parágrafos.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Submition controls */}
             <div className="flex items-center gap-3 pt-4">
               <button
                 type="submit"
-                disabled={saving || descricao.length > 1000}
+                disabled={saving || (tipo === "musica" && descricao.length > 1000)}
                 className="font-display font-black tracking-widest text-[#0a0a0a] bg-[#00e5a0] text-xs py-3 px-6 rounded-lg uppercase transition-all cursor-pointer hover:bg-emerald-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: config.accentColor }}
               >
-                {saving ? "A guardar..." : editingPost ? "Actualizar Lançamento" : "Inserir Lançamento"}
+                {saving ? "A guardar..." : editingPost ? "Actualizar Post" : "Publicar Artigo"}
               </button>
 
               <button
@@ -542,7 +704,14 @@ export default function AdminPosts({
                         />
                       </td>
                       <td className="py-3 px-4 font-bold text-white truncate max-w-[150px]">
-                        {post.titulo}
+                        <div className="flex flex-col">
+                          <span className="truncate">{post.titulo}</span>
+                          {post.tipo && post.tipo !== "musica" && (
+                            <span className="text-[8px] uppercase tracking-widest font-black" style={{ color: config.accentColor }}>
+                              {post.tipo === "noticia" ? "Notícia" : "Entretenimento"}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 px-4 text-zinc-300 truncate max-w-[120px]">
                         {post.artista}
