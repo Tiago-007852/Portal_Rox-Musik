@@ -25,11 +25,14 @@ export default function HomePage({
     setCurrentPage(1);
   }, []);
 
+  // Only display music posts on the Main Music HomePage
+  const musicPosts = posts.filter((p) => !p.tipo || p.tipo === "musica");
+
   // Find featured post
-  const featuredPost = posts.find((p) => p.destaque) || posts[0];
+  const featuredPost = musicPosts.find((p) => p.destaque) || musicPosts[0];
 
   // Latest releases (exclude featured post to avoid duplication, or keep all, let's keep all but sort by newest date)
-  const sortedNewest = [...posts].sort(
+  const sortedNewest = [...musicPosts].sort(
     (a, b) => new Date(b.data).getTime() - new Date(a.data).getTime()
   );
 
@@ -251,7 +254,7 @@ export default function HomePage({
       <div className="space-y-12">
         {categories.map((cat) => {
           // Filter posts for this category
-          const catPosts = posts
+          const catPosts = musicPosts
             .filter((p) => p.categoria.toUpperCase() === cat.nome.toUpperCase())
             .slice(0, 6);
 
