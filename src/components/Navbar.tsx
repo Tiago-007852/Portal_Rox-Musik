@@ -80,6 +80,30 @@ export default function Navbar({
                 </button>
               );
             })}
+            <button
+              onClick={() => {
+                navigate("noticias");
+                setMobileMenuOpen(false);
+              }}
+              className={`transition-colors hover:text-white ${
+                currentRoute.name === "noticias" ? "font-black" : "text-[#aaaaaa]"
+              }`}
+              style={currentRoute.name === "noticias" ? { color: config.accentColor } : {}}
+            >
+              Notícias
+            </button>
+            <button
+              onClick={() => {
+                navigate("entretenimento");
+                setMobileMenuOpen(false);
+              }}
+              className={`transition-colors hover:text-white ${
+                currentRoute.name === "entretenimento" ? "font-black" : "text-[#aaaaaa]"
+              }`}
+              style={currentRoute.name === "entretenimento" ? { color: config.accentColor } : {}}
+            >
+              Entretenimento
+            </button>
           </nav>
 
           {/* Actions Desk (Search, Admin trigger, mobile button) */}
@@ -172,6 +196,26 @@ export default function Navbar({
               {cat.nome}
             </button>
           ))}
+          <button
+            onClick={() => {
+              navigate("noticias");
+              setMobileMenuOpen(false);
+            }}
+            className="block w-full text-left px-3 py-2.5 rounded-md text-base font-medium hover:bg-[#1a1a1a] transition-all"
+            style={{ borderLeft: `3px solid ${config.accentColor}`, paddingLeft: "12px", color: currentRoute.name === "noticias" ? config.accentColor : "#dddddd" }}
+          >
+            Notícias
+          </button>
+          <button
+            onClick={() => {
+              navigate("entretenimento");
+              setMobileMenuOpen(false);
+            }}
+            className="block w-full text-left px-3 py-2.5 rounded-md text-base font-medium hover:bg-[#1a1a1a] transition-all"
+            style={{ borderLeft: `3px solid ${config.accentColor}`, paddingLeft: "12px", color: currentRoute.name === "entretenimento" ? config.accentColor : "#dddddd" }}
+          >
+            Entretenimento
+          </button>
         </div>
       )}
     </header>
