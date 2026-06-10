@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "Post": {
+      "title": "Post",
+      "description": "Representa uma faixa musical, álbum, EP ou mixtape postado no portal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID único do post" },
+        "titulo": { "type": "string", "description": "Título da música ou álbum" },
+        "artista": { "type": "string", "description": "Nome do artista" },
+        "produtor": { "type": "string", "description": "Nome do produtor musical" },
+        "categoria": { "type": "string", "description": "Categoria da música (ex: AFRO HOUSE, KIZOMBA)" },
+        "capa": { "type": "string", "description": "URL da imagem de capa" },
+        "descricao": { "type": "string", "description": "Descrição ou tracklist" },
+        "linkDownload": { "type": "string", "description": "URL ou link para download" },
+        "destaque": { "type": "boolean", "description": "Indica se o post está em destaque no slide" },
+        "data": { "type": "string", "description": "Data de publicação formato YYYY-MM-DD" },
+        "downloads": { "type": "integer", "description": "Contagem de downloads recebidos" },
+        "tipo": { "type": "string", "description": "Tipo de post: musica, noticia, entretenimento" },
+        "subtitulo": { "type": "string", "description": "Subtítulo ou resumo breve da notícia" },
+        "autor": { "type": "string", "description": "Autor ou fonte da matéria" },
+        "conteudo": { "type": "string", "description": "Conteúdo de texto detalhado da notícia ou matéria" }
+      },
+      "required": ["id", "titulo", "artista", "categoria", "capa", "descricao", "linkDownload", "destaque", "data"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Configuração de categoria com cor personalizada",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID slug da categoria" },
+        "nome": { "type": "string", "description": "Nome de exibição em maiúsculo" },
+        "cor": { "type": "string", "description": "Código de cor em formato hex" }
+      },
+      "required": ["id", "nome", "cor"]
+    },
+    "SiteConfig": {
+      "title": "SiteConfig",
+      "description": "Configurações gerais do site, redes sociais e identidade visual",
+      "type": "object",
+      "properties": {
+        "siteName": { "type": "string", "description": "Nome principal do site" },
+        "slogan": { "type": "string", "description": "Slogan do site" },
+        "email": { "type": "string", "description": "E-mail de contacto" },
+        "telefone": { "type": "string", "description": "Telefone de contacto com indicativo" },
+        "facebook": { "type": "string", "description": "Link do perfil Facebook" },
+        "instagram": { "type": "string", "description": "Link do perfil Instagram" },
+        "youtube": { "type": "string", "description": "Link do canal Youtube" },
+        "whatsapp": { "type": "string", "description": "Link ou número do WhatsApp" },
+        "pinterest": { "type": "string", "description": "Link do perfil Pinterest" },
+        "accentColor": { "type": "string", "description": "Cor de destaque principal" }
+      },
+      "required": ["siteName", "slogan", "email", "telefone", "facebook", "instagram", "youtube", "whatsapp", "pinterest", "accentColor"]
+    }
+  },
+  "firestore": {
+    "/posts/{postId}": {
+      "schema": "Post",
+      "description": "Lista de faixas e álbuns musicais postados"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Lista de categorias disponíveis para os posts"
+    },
+    "/config/site": {
+      "schema": "SiteConfig",
+      "description": "Configurações globais de visual e contacto do portal"
+    }
+  }
+}

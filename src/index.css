@@ -1,0 +1,240 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+}
+
+/* ==========================================================================
+   LIGHT MODE STYLING & ADAPTIVE COMPONENT ENHANCEMENTS
+   ========================================================================== */
+
+/* Root state and core blocks */
+.light {
+  background-color: #f6f8fa !important;
+  color: #1a1e21 !important;
+}
+
+/* Layout container fallbacks */
+.light .bg-\[\#0a0a0a\] {
+  background-color: #f6f8fa !important;
+}
+
+.light .bg-\[\#111111\] {
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.light .bg-\[\#151515\] {
+  background-color: #ffffff !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.light .bg-\[\#1a1a1a\] {
+  background-color: #fdfdfd !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.light .bg-\[\#0d0d0d\] {
+  background-color: #ffffff !important;
+}
+
+.light .bg-\[\#0b0b0b\] {
+  background-color: #f1f3f5 !important;
+}
+
+.light .bg-\[\#131313\] {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Hover triggers and action items */
+.light .hover\:bg-\[\#1a1a1a\]\/55:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.light .hover\:bg-\[\#1a1a1a\]:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Global Border parameters */
+.light .border-\[\#2a2a2a\] {
+  border-color: #e5e7eb !important;
+}
+
+.light .border-\[\#2a2a2a\]\/80 {
+  border-color: rgba(229, 231, 235, 0.8) !important;
+}
+
+.light .border-\[\#2a2a2a\]\/90 {
+  border-color: rgba(229, 231, 235, 0.9) !important;
+}
+
+.light .border-\[\#1e1e1e\] {
+  border-color: #e5e7eb !important;
+}
+
+.light .border-\[\#1e1e1e\]\/80 {
+  border-color: rgba(229, 231, 235, 0.8) !important;
+}
+
+.light .border-\[\#222\] {
+  border-color: #e5e7eb !important;
+}
+
+.light .border-\[\#1c1c1c\] {
+  border-color: #e5e7eb !important;
+}
+
+.light .divide-\[\#1e1e1e\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e5e7eb !important;
+}
+
+/* Global Text Colors */
+.light .text-white {
+  color: #111111 !important;
+}
+
+.light .text-zinc-100 {
+  color: #1b1b1f !important;
+}
+
+.light .text-zinc-300 {
+  color: #3f3f46 !important;
+}
+
+.light .text-zinc-400 {
+  color: #52525b !important;
+}
+
+.light .text-zinc-500 {
+  color: #71717a !important;
+}
+
+.light .text-\[\#aaaaaa\] {
+  color: #52525b !important;
+}
+
+.light .text-zinc-650 {
+  color: #71717a !important;
+}
+
+/* Sidebar ranking numbers shadow */
+.light .text-\[\#222222\] {
+  color: #e5e7eb !important;
+}
+
+/* Header section customization */
+.light header {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02) !important;
+}
+
+.light header .text-white {
+  color: #111111 !important;
+}
+
+.light header .text-\[\#aaaaaa\] {
+  color: #52525b !important;
+}
+
+.light header .hover\:text-white:hover {
+  color: #111111 !important;
+}
+
+.light header input.bg-\[\#1a1a1a\] {
+  background-color: #f3f4f6 !important;
+  color: #111111 !important;
+  border-color: #e5e7eb !important;
+}
+
+.light header .hover\:bg-\[\#1a1a1a\]:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.light header .bg-\[\#0d0d0d\] {
+  background-color: #ffffff !important;
+  border-bottom-color: #e5e7eb !important;
+}
+
+.light header .bg-\[\#0d0d0d\] button {
+  color: #222222 !important;
+}
+
+.light header .bg-\[\#0d0d0d\] button:hover {
+  background-color: #f3f4f6 !important;
+}
+
+/* Keep hero slide display readable with dark gradient overlay */
+.light .bg-gradient-to-t {
+  background-image: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.2) 65%, transparent 100%) !important;
+}
+
+.light .bg-gradient-to-t .text-white {
+  color: #ffffff !important;
+}
+
+.light .bg-gradient-to-t .text-zinc-350,
+.light .bg-gradient-to-t .text-zinc-300,
+.light .bg-gradient-to-t p {
+  color: #e4e4e7 !important;
+}
+
+/* Grid & cards hover state details */
+.light .group:hover img {
+  border-color: var(--accentColor, #00e5a0) !important;
+}
+
+/* Interactive elements inside admin pages */
+.light .bg-\[rgba\(255\,255\,255\,0\.03\)\] {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+  border-color: #e5e7eb !important;
+}
+
+/* Modals & Forms input focus fields in Light mode */
+.light input, .light textarea, .light select {
+  background-color: #ffffff !important;
+  color: #111111 !important;
+  border-color: #d1d5db !important;
+}
+
+.light input:focus, .light textarea:focus, .light select:focus {
+  border-color: var(--accentColor, #00e5a0) !important;
+  outline: none;
+}
+
+/* Footer layout elements */
+.light footer {
+  background-color: #f3f4f6 !important;
+  border-top-color: #e5e7eb !important;
+}
+
+.light footer .text-white {
+  color: #111111 !important;
+}
+
+.light footer .text-\[\#aaaaaa\] {
+  color: #52525b !important;
+}
+
+.light footer .border-t {
+  border-top-color: #e5e7eb !important;
+}
+
+.light footer a.bg-\[\#1a1a1a\] {
+  background-color: #ffffff !important;
+  color: #4b5563 !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.light footer a.bg-\[\#1a1a1a\]:hover {
+  background-color: #f3f4f6 !important;
+}
+
+/* Active buttons and scroll spin state visualizers */
+.light .animate-pulse {
+  background-color: #e5e7eb !important;
+}
+
