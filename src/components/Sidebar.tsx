@@ -9,8 +9,9 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ posts, config, onPostClick }: SidebarProps) {
-  // Sort posts by download count (descending) and get top 5
-  const topDownloaded = [...posts]
+  // Sort posts by download count (descending) and get top 5 - only music posts
+  const musicPosts = posts.filter((p) => !p.tipo || p.tipo === "musica");
+  const topDownloaded = [...musicPosts]
     .sort((a, b) => (b.downloads || 0) - (a.downloads || 0))
     .slice(0, 5);
 
