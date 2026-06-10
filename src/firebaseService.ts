@@ -27,6 +27,21 @@ export async function testFirebaseConnection() {
   }
 }
 
+// Reusable helper to clean undefined fields before sending to Firestore, preventing SDK crash
+function cleanUndefined<T extends object>(obj: T): T {
+  const clean: any = {};
+  Object.entries(obj).forEach(([key, val]) => {
+    if (val !== undefined) {
+      if (val !== null && typeof val === "object" && !Array.isArray(val) && !(val instanceof Date)) {
+        clean[key] = cleanUndefined(val);
+      } else {
+        clean[key] = val;
+      }
+    }
+  });
+  return clean as T;
+}
+
 // 1. SITE CONFIGURATION SYNC
 export async function fetchSiteConfig(): Promise<SiteConfig> {
   const path = "config/site";
@@ -57,7 +72,7 @@ export async function saveSiteConfig(updatedConfig: SiteConfig): Promise<void> {
   const path = "config/site";
   try {
     const configDocRef = doc(db, "config", "site");
-    await setDoc(configDocRef, updatedConfig);
+    await setDoc(configDocRef, cleanUndefined(updatedConfig));
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -104,7 +119,7 @@ export async function saveCategory(catId: string, updatedData: Partial<Category>
   const path = `categories/${catId}`;
   try {
     const catDocRef = doc(db, "categories", catId);
-    await updateDoc(catDocRef, updatedData);
+    await updateDoc(catDocRef, cleanUndefined(updatedData));
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
@@ -149,7 +164,7 @@ export async function createPostInFirestore(newPost: Post): Promise<void> {
   const path = `posts/${newPost.id}`;
   try {
     const pDocRef = doc(db, "posts", newPost.id);
-    await setDoc(pDocRef, newPost);
+    await setDoc(pDocRef, cleanUndefined(newPost));
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
   }
@@ -159,7 +174,7 @@ export async function updatePostInFirestore(id: string, updatedData: Partial<Pos
   const path = `posts/${id}`;
   try {
     const pDocRef = doc(db, "posts", id);
-    await updateDoc(pDocRef, updatedData);
+    await updateDoc(pDocRef, cleanUndefined(updatedData));
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
