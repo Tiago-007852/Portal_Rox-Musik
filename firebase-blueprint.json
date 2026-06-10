@@ -15,7 +15,11 @@
         "linkDownload": { "type": "string", "description": "URL ou link para download" },
         "destaque": { "type": "boolean", "description": "Indica se o post está em destaque no slide" },
         "data": { "type": "string", "description": "Data de publicação formato YYYY-MM-DD" },
-        "downloads": { "type": "integer", "description": "Contagem de downloads recebidos" }
+        "downloads": { "type": "integer", "description": "Contagem de downloads recebidos" },
+        "tipo": { "type": "string", "description": "Tipo de post: musica, noticia, entretenimento" },
+        "subtitulo": { "type": "string", "description": "Subtítulo ou resumo breve da notícia" },
+        "autor": { "type": "string", "description": "Autor ou fonte da matéria" },
+        "conteudo": { "type": "string", "description": "Conteúdo de texto detalhado da notícia ou matéria" }
       },
       "required": ["id", "titulo", "artista", "categoria", "capa", "descricao", "linkDownload", "destaque", "data"]
     },
