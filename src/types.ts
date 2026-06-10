@@ -10,6 +10,10 @@ export interface Post {
   destaque: boolean;
   data: string;
   downloads?: number; // to support "Mais Baixados"
+  tipo?: "musica" | "noticia" | "entretenimento";
+  subtitulo?: string;
+  autor?: string;
+  conteudo?: string;
 }
 
 export interface SiteConfig {
