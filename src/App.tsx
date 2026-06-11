@@ -139,18 +139,7 @@ export default function App() {
 
     loadFirebaseData();
 
-    // Check secure admin login sessions
-    const sessionActive = localStorage.getItem("rox_admin_session");
-    const sessionTime = localStorage.getItem("rox_admin_session_time");
-    if (sessionActive === "active") {
-      const hours8 = 8 * 60 * 60 * 1000;
-      if (sessionTime && Date.now() - Number(sessionTime) > hours8) {
-        localStorage.removeItem("rox_admin_session");
-        localStorage.removeItem("rox_admin_session_time");
-      } else {
-        setAdminSession(true);
-      }
-    }
+    // Secure admin session validation is handled completely in the reactive auth state listener below to prevent db permission mismatch
 
     // Capture standard anchor hash-routing fallbacks
     const handleHashPath = () => {
@@ -189,19 +178,32 @@ export default function App() {
     return () => window.removeEventListener("hashchange", handleHashPath);
   }, []);
 
-  // Listen to Firebase Auth state change reactively to prevent race conditions on content sync
+  // Listen to Firebase Auth state change reactively to prevent race conditions on content sync and avoid db write rejection
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setFirebaseUser(user);
-      setAuthChecking(false);
+      
+      const allowedEmails = ["tiagopw07@gmail.com", "nelmariotanganica@gmail.com", "estefaniatinguita@gmail.com"];
       if (user) {
-        const allowedEmails = ["tiagopw07@gmail.com", "nelmariotanganica@gmail.com", "estefaniatinguita@gmail.com"];
-        if (allowedEmails.includes(user.email?.toLowerCase() || "")) {
+        const userEmail = user.email?.toLowerCase() || "";
+        if (allowedEmails.includes(userEmail)) {
           setAdminSession(true);
           localStorage.setItem("rox_admin_session", "active");
           localStorage.setItem("rox_admin_session_time", String(Date.now()));
+        } else {
+          // Force sign out non-admins immediately on client structure to avoid fake credentials writing attempts
+          setAdminSession(false);
+          localStorage.removeItem("rox_admin_session");
+          localStorage.removeItem("rox_admin_session_time");
+          signOut(auth).catch(() => {});
         }
+      } else {
+        // If there's no native active user session on the Firebase SDK, clear any local state to shield database writes
+        setAdminSession(false);
+        localStorage.removeItem("rox_admin_session");
+        localStorage.removeItem("rox_admin_session_time");
       }
+      setAuthChecking(false);
     });
     return () => unsubscribe();
   }, []);
@@ -685,7 +687,13 @@ export default function App() {
         ) : (
           /* Admin Center Layout (Private View with Side Navigation) */
           <div>
-            {!adminSession ? (
+            {authChecking ? (
+              /* Glassmorphic security lock check state */
+              <div className="flex flex-col items-center justify-center min-h-[50vh] text-center gap-4">
+                <div className="w-10 h-10 border-4 border-[#00e5a0]/25 border-t-[#00e5a0] rounded-full animate-spin" style={{ borderTopColor: config.accentColor }} />
+                <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-widest animate-pulse">A verificar chaves de encriptação...</p>
+              </div>
+            ) : !adminSession ? (
               <AdminLogin onLoginSuccess={handleLoginSuccess} config={config} />
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
