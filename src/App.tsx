@@ -28,6 +28,7 @@ import NewsPage from "./components/NewsPage";
 // Security credential admin gates
 import AdminLogin from "./components/AdminLogin";
 import { auth } from "./firebase";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
 
 // Modular Admin subsections
 import AdminDashboard from "./components/AdminDashboard";
@@ -47,6 +48,8 @@ export default function App() {
   const [config, setConfig] = useState<SiteConfig>(DEFAULT_CONFIG);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingDb, setLoadingDb] = useState(true);
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [authChecking, setAuthChecking] = useState(true);
 
   // Theme state logic (persist preference in local storage)
   const [theme, setTheme] = useState<"dark" | "light">(
@@ -186,6 +189,23 @@ export default function App() {
     return () => window.removeEventListener("hashchange", handleHashPath);
   }, []);
 
+  // Listen to Firebase Auth state change reactively to prevent race conditions on content sync
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setFirebaseUser(user);
+      setAuthChecking(false);
+      if (user) {
+        const allowedEmails = ["tiagopw07@gmail.com", "nelmariotanganica@gmail.com", "estefaniatinguita@gmail.com"];
+        if (allowedEmails.includes(user.email?.toLowerCase() || "")) {
+          setAdminSession(true);
+          localStorage.setItem("rox_admin_session", "active");
+          localStorage.setItem("rox_admin_session_time", String(Date.now()));
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   // --- STATE HANDLERS ---
   const navigate = (routeName: string, param?: string) => {
     // Save history (limited to max 20 entries)
@@ -265,10 +285,15 @@ export default function App() {
     localStorage.setItem("rox_admin_session_time", String(Date.now()));
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setAdminSession(false);
     localStorage.removeItem("rox_admin_session");
     localStorage.removeItem("rox_admin_session_time");
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.warn("Erro ao terminar sessão do Firebase:", err);
+    }
     navigate("home");
   };
 
@@ -302,8 +327,16 @@ export default function App() {
         }
       }
       setToastMessage("✅ Lançamento guardado com sucesso!");
-    } catch (err) {
-      setToastMessage("⚠️ Lançamento local ativo, mas erro ao guardar na nuvem.");
+    } catch (err: any) {
+      console.error("Erro ao criar post ou syncing:", err);
+      let detail = "";
+      try {
+        const parsed = JSON.parse(err.message);
+        detail = ` (${parsed.error || err.message})`;
+      } catch {
+        detail = ` (${err?.message || String(err)})`;
+      }
+      setToastMessage(`⚠️ Lançamento local ativo, mas erro na nuvem${detail.substring(0, 80)}.`);
     }
   };
 
@@ -336,8 +369,16 @@ export default function App() {
         }
       }
       setToastMessage("✅ Lançamento guardado com sucesso!");
-    } catch (err) {
-      setToastMessage("⚠️ Erro ao atualizar na nuvem.");
+    } catch (err: any) {
+      console.error("Erro ao atualizar post na nuvem:", err);
+      let detail = "";
+      try {
+        const parsed = JSON.parse(err.message);
+        detail = ` (${parsed.error || err.message})`;
+      } catch {
+        detail = ` (${err?.message || String(err)})`;
+      }
+      setToastMessage(`⚠️ Guardado localmente, mas falhou na nuvem${detail.substring(0, 80)}.`);
     }
   };
 
@@ -349,8 +390,16 @@ export default function App() {
     try {
       await deletePostFromFirestore(id);
       setToastMessage("✅ Post removido do sistema.");
-    } catch (err) {
-      setToastMessage("⚠️ Erro ao remover da nuvem.");
+    } catch (err: any) {
+      console.error("Erro ao remover post da nuvem:", err);
+      let detail = "";
+      try {
+        const parsed = JSON.parse(err.message);
+        detail = ` (${parsed.error || err.message})`;
+      } catch {
+        detail = ` (${err?.message || String(err)})`;
+      }
+      setToastMessage(`⚠️ Removido localmente, mas erro na nuvem${detail.substring(0, 80)}.`);
     }
   };
 
@@ -370,8 +419,16 @@ export default function App() {
     try {
       await saveCategory(catId, updatedData);
       setToastMessage("✅ Categoria atualizada!");
-    } catch (err) {
-      setToastMessage("⚠️ Erro ao sincronizar categoria.");
+    } catch (err: any) {
+      console.error("Erro ao sincronizar categoria na nuvem:", err);
+      let detail = "";
+      try {
+        const parsed = JSON.parse(err.message);
+        detail = ` (${parsed.error || err.message})`;
+      } catch {
+        detail = ` (${err?.message || String(err)})`;
+      }
+      setToastMessage(`⚠️ Categoria local ativa, mas erro na nuvem${detail.substring(0, 80)}.`);
     }
 
     // Rename matching posts category string
@@ -682,7 +739,7 @@ export default function App() {
 
                 {/* Admin Active Tab Content (Col span 9) */}
                 <div className="lg:col-span-9 bg-transparent">
-                  {!auth.currentUser && (
+                  {!firebaseUser && (
                     <div className="mb-6 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans shadow-lg">
                       <div className="flex items-center gap-3">
                         <Lock size={18} className="shrink-0 text-orange-400" />
