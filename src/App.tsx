@@ -113,8 +113,19 @@ export default function App() {
         if (storedPosts) setPosts(JSON.parse(storedPosts));
         else setPosts(SEED_POSTS);
 
-        if (storedCategories) setCategories(JSON.parse(storedCategories));
-        else setCategories(DEFAULT_CATEGORIES);
+        let finalCategories = DEFAULT_CATEGORIES;
+        if (storedCategories) {
+          const parsed = JSON.parse(storedCategories);
+          const merged = [...parsed];
+          for (const defCat of DEFAULT_CATEGORIES) {
+            if (!merged.some(c => c.id === defCat.id || c.nome.toUpperCase() === defCat.nome.toUpperCase())) {
+              merged.push(defCat);
+            }
+          }
+          finalCategories = merged;
+        }
+        setCategories(finalCategories);
+        localStorage.setItem("rox_categories", JSON.stringify(finalCategories));
 
         if (storedConfig) setConfig(JSON.parse(storedConfig));
         else setConfig(DEFAULT_CONFIG);
