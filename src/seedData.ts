@@ -9,6 +9,8 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: "ep", nome: "EP", cor: "#3498db" },
   { id: "rap", nome: "RAP", cor: "#9c88ff" },
   { id: "kuduro", nome: "KUDURO", cor: "#f5cd79" },
+  { id: "noticias", nome: "NOTÍCIAS", cor: "#ff5e57" },
+  { id: "entretenimento", nome: "ENTRETENIMENTO", cor: "#00eedd" },
   { id: "love", nome: "LOVE", cor: "#fd79a8" }
 ];
 
