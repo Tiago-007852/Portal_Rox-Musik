@@ -18,9 +18,9 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() &&
-             (request.auth.token.email == "tiagopw07@gmail.com" || 
-              request.auth.token.email == "nelmariotanganica@gmail.com" || 
-              request.auth.token.email == "estefaniatinguita@gmail.com");
+             (request.auth.token.email.matches('(?i)^tiagopw07@gmail\\.com$') || 
+              request.auth.token.email.matches('(?i)^nelmariotanganica@gmail\\.com$') || 
+              request.auth.token.email.matches('(?i)^estefaniatinguita@gmail\\.com$'));
     }
 
     function isValidId(id) {
