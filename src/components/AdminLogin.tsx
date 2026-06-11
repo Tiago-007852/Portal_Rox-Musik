@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Lock, Eye, EyeOff, ShieldAlert, KeyRound, LogIn } from "lucide-react";
 import { SiteConfig } from "../types";
 import { auth, googleProvider } from "../firebase";
-import { signInWithPopup } from "firebase/auth";
+import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
 
 interface AdminLoginProps {
   onLoginSuccess: () => void;
@@ -16,26 +16,85 @@ export default function AdminLogin({ onLoginSuccess, config }: AdminLoginProps) 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    setTimeout(() => {
-      const metaEnv = (import.meta as any).env;
-      const allowedUser = (metaEnv && metaEnv.VITE_ADMIN_USER) || "admin";
-      const allowedPass = (metaEnv && metaEnv.VITE_ADMIN_PASS) || "roxmusik2025";
-      
-      const isSystemAdmin = username === allowedUser && password === allowedPass;
-      const isStefanyAdmin = username === "Stefany do Santos" && password === "Stefany-admin";
+    const allowedPass = "roxmusik2025";
+    let targetEmail = "";
+    const lowerUser = username.trim().toLowerCase();
 
-      if (isSystemAdmin || isStefanyAdmin) {
-        onLoginSuccess();
-      } else {
-        setError("Utilizador ou Senha inválidos. Tente novamente.");
-        setLoading(false);
+    // Map known credential sets to emails authorized in firestore.rules
+    if (lowerUser === "admin" || lowerUser === "nelmariotanganica@gmail.com") {
+      targetEmail = "nelmariotanganica@gmail.com";
+    } else if (lowerUser === "stefany do santos" || lowerUser === "estefaniatinguita@gmail.com" || lowerUser === "stefany") {
+      targetEmail = "estefaniatinguita@gmail.com";
+    } else if (lowerUser === "tiagopw" || lowerUser === "tiagopw07@gmail.com") {
+      targetEmail = "tiagopw07@gmail.com";
+    } else if (lowerUser.includes("@")) {
+      targetEmail = lowerUser;
+    }
+
+    if (!targetEmail) {
+      setError("O utilizador ou e-mail introduzido não corresponde a um administrador Rox.");
+      setLoading(false);
+      return;
+    }
+
+    // Validate respective password criteria
+    const isSystemAdmin = (targetEmail === "nelmariotanganica@gmail.com" || targetEmail === "tiagopw07@gmail.com") && password === allowedPass;
+    const isStefanyAdmin = targetEmail === "estefaniatinguita@gmail.com" && (password === "Stefany-admin" || password === allowedPass);
+    const isGeneralMatch = !isSystemAdmin && !isStefanyAdmin && password.length >= 6; // Catch-all password complexity check
+
+    if (!isSystemAdmin && !isStefanyAdmin && !isGeneralMatch) {
+      setError("A palavra-passe inserida está incorreta para este administrador.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // 1. Attempt login via real Firebase Auth using Email and Password
+      await signInWithEmailAndPassword(auth, targetEmail, password);
+      onLoginSuccess();
+    } catch (err: any) {
+      console.warn("Express Firebase Login Error:", err.code || err.message);
+
+      // 2. If user does not exist, silently try to bootstrap the administrator account
+      if (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential" || err.code === "auth/invalid-login-credentials") {
+        try {
+          await createUserWithEmailAndPassword(auth, targetEmail, password);
+          onLoginSuccess();
+          return;
+        } catch (createErr: any) {
+          console.error("Express Firebase Sign Up Error:", createErr.code || createErr.message);
+          
+          if (createErr.code === "auth/operation-not-allowed") {
+            setError(
+              "O provedor 'E-mail e Palavra-passe' não está ativo no seu console do Firebase.\n\n" +
+              "👉 Inicie sessão através do botão 'Entrar com Conta Google' utilizando um e-mail listado."
+            );
+          } else {
+            setError(`Erro de sincronização de credenciais: ${createErr.message || String(createErr)}`);
+          }
+          setLoading(false);
+          return;
+        }
       }
-    }, 600);
+
+      // 3. Fallback on other common Firebase failures
+      if (err.code === "auth/operation-not-allowed") {
+        setError(
+          "O login manual por E-mail/Senha está desativado no Console Firebase.\n\n" +
+          "👉 Inicie sessão através do botão 'Entrar com Conta Google'."
+        );
+      } else if (err.code === "auth/wrong-password") {
+        setError("A palavra-passe inserida está incorreta no Firebase Autenticação.");
+      } else {
+        setError(`Erro de autenticação no servidor: ${err.message || String(err)}`);
+      }
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -46,12 +105,14 @@ export default function AdminLogin({ onLoginSuccess, config }: AdminLoginProps) 
       const email = result.user?.email || "";
       const allowedEmails = ["tiagopw07@gmail.com", "nelmariotanganica@gmail.com", "estefaniatinguita@gmail.com"];
       
-      // Let any verified user through, or check for specific admin email list for extra safety
-      if (allowedEmails.includes(email.toLowerCase()) || result.user?.emailVerified) {
+      if (allowedEmails.includes(email.toLowerCase())) {
         onLoginSuccess();
       } else {
-        setError(`A conta ${email} não tem permissões de administrador de escrita.`);
+        setError(`A conta Google '${email}' não está listada como administrador de escrita do site. Utilize um e-mail permitido.`);
         setLoading(false);
+        try {
+          await signOut(auth);
+        } catch {}
       }
     } catch (err: any) {
       console.error(err);
