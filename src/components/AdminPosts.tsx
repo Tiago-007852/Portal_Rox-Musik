@@ -9,6 +9,7 @@ interface AdminPostsProps {
   onUpdatePost: (id: string, updated: Partial<Post>) => void;
   onDeletePost: (id: string) => void;
   config: { accentColor: string };
+  cloudAuth?: boolean;
 }
 
 export default function AdminPosts({
@@ -17,7 +18,8 @@ export default function AdminPosts({
   onCreatePost,
   onUpdatePost,
   onDeletePost,
-  config
+  config,
+  cloudAuth = false
 }: AdminPostsProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
@@ -676,6 +678,21 @@ export default function AdminPosts({
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Sync Status Indicator */}
+          <div className="flex items-center justify-end gap-2 px-1">
+            {cloudAuth ? (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400/50" />
+                Sincronizado na Nuvem
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[9px] font-black uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse shadow-sm shadow-orange-400/50" />
+                Apenas em Cache Local (Sem Autenticação)
+              </div>
+            )}
           </div>
 
           {/* Table Container element */}

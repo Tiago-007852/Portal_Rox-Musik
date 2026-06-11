@@ -332,13 +332,19 @@ export default function App() {
     } catch (err: any) {
       console.error("Erro ao criar post ou syncing:", err);
       let detail = "";
+      let userMessage = "";
       try {
         const parsed = JSON.parse(err.message);
         detail = ` (${parsed.error || err.message})`;
+        userMessage = parsed.userMessage || "";
       } catch {
         detail = ` (${err?.message || String(err)})`;
       }
-      setToastMessage(`⚠️ Lançamento local ativo, mas erro na nuvem${detail.substring(0, 80)}.`);
+      setToastMessage(
+        userMessage
+          ? `⚠️ ${userMessage}`
+          : `⚠️ Lançamento guardado apenas em cache local.${detail.substring(0, 80)}.\n👉 Inicie sessão com Conta Google para sincronizar.`
+      );
     }
   };
 
@@ -374,13 +380,19 @@ export default function App() {
     } catch (err: any) {
       console.error("Erro ao atualizar post na nuvem:", err);
       let detail = "";
+      let userMessage = "";
       try {
         const parsed = JSON.parse(err.message);
         detail = ` (${parsed.error || err.message})`;
+        userMessage = parsed.userMessage || "";
       } catch {
         detail = ` (${err?.message || String(err)})`;
       }
-      setToastMessage(`⚠️ Guardado localmente, mas falhou na nuvem${detail.substring(0, 80)}.`);
+      setToastMessage(
+        userMessage
+          ? `⚠️ ${userMessage}`
+          : `⚠️ Guardado localmente, mas falhou na nuvem${detail.substring(0, 80)}.\n👉 Inicie sessão com Conta Google para sincronizar.`
+      );
     }
   };
 
@@ -589,6 +601,7 @@ export default function App() {
             onUpdatePost={handleUpdatePost}
             onDeletePost={handleDeletePost}
             config={config}
+            cloudAuth={!!firebaseUser}
           />
         );
       case "categories":

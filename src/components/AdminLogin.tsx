@@ -60,6 +60,18 @@ export default function AdminLogin({ onLoginSuccess, config }: AdminLoginProps) 
     } catch (err: any) {
       console.warn("Express Firebase Login Error:", err.code || err.message);
 
+      // 0a. Detect unauthorized-domain and show explicit instructions
+      if (err.code === "auth/unauthorized-domain") {
+        setError(
+          "🔒 Domínio Não Autorizado no Firebase!\n\n" +
+          "O URL atual do site não está registado nos \"Authorized Domains\" do Firebase Auth.\n\n" +
+          "👉 Aceda ao Console Firebase → Authentication → Settings → Authorized Domains\n" +
+          "   e adicione o domínio: " + window.location.origin
+        );
+        setLoading(false);
+        return;
+      }
+
       // 2. If user does not exist, silently try to bootstrap the administrator account
       if (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential" || err.code === "auth/invalid-login-credentials") {
         try {
@@ -116,7 +128,16 @@ export default function AdminLogin({ onLoginSuccess, config }: AdminLoginProps) 
       }
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || "Erro de autenticação com o provedor Google.");
+      if (err.code === "auth/unauthorized-domain") {
+        setError(
+          "🔒 Domínio Não Autorizado no Firebase!\n\n" +
+          "O URL atual do site não está registado nos \"Authorized Domains\" do Firebase Auth.\n\n" +
+          "👉 Aceda ao Console Firebase → Authentication → Settings → Authorized Domains\n" +
+          "   e adicione o domínio: " + window.location.origin
+        );
+      } else {
+        setError(err?.message || "Erro de autenticação com o provedor Google.");
+      }
       setLoading(false);
     }
   };
