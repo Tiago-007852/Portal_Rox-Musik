@@ -143,7 +143,7 @@ export default function PostPage({
             <h3 className="text-[10px] font-black tracking-widest uppercase text-[#aaaaaa]">
               {post.tipo && post.tipo !== "musica" ? "Conteúdo da Matéria" : "Descrição / Ficha Técnica"}
             </h3>
-            <p className="text-zinc-300 text-[15px] sm:text-[17px] leading-relaxed whitespace-pre-line font-sans">
+            <p className="text-zinc-300 text-[17px] sm:text-[19px] leading-relaxed whitespace-pre-line font-sans">
               {post.tipo && post.tipo !== "musica" 
                 ? (post.conteudo || post.descricao || "Sem mais detalhes disponíveis para este artigo.") 
                 : (post.descricao || "Nenhuma descrição adicional foi fornecida para este trabalho musical.")}
