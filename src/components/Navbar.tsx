@@ -66,7 +66,12 @@ export default function Navbar({
               Home
             </button>
             {categories.map((cat) => {
-              const isActive = currentRoute.name === "category" && currentRoute.param === cat.nome;
+              const belongsToNews = cat.nome.toUpperCase() === "NOTÍCIA" || cat.nome.toUpperCase() === "NOTÍCIAS";
+              const belongsToEnt = cat.nome.toUpperCase() === "ENTRETENIMENTO";
+              
+              const isActive = (currentRoute.name === "category" && currentRoute.param === cat.nome) ||
+                               (belongsToNews && currentRoute.name === "noticias") ||
+                               (belongsToEnt && currentRoute.name === "entretenimento");
               return (
                 <button
                   key={cat.id}
@@ -80,30 +85,6 @@ export default function Navbar({
                 </button>
               );
             })}
-            <button
-              onClick={() => {
-                navigate("noticias");
-                setMobileMenuOpen(false);
-              }}
-              className={`transition-colors hover:text-white ${
-                currentRoute.name === "noticias" ? "font-black" : "text-[#aaaaaa]"
-              }`}
-              style={currentRoute.name === "noticias" ? { color: config.accentColor } : {}}
-            >
-              Notícias
-            </button>
-            <button
-              onClick={() => {
-                navigate("entretenimento");
-                setMobileMenuOpen(false);
-              }}
-              className={`transition-colors hover:text-white ${
-                currentRoute.name === "entretenimento" ? "font-black" : "text-[#aaaaaa]"
-              }`}
-              style={currentRoute.name === "entretenimento" ? { color: config.accentColor } : {}}
-            >
-              Entretenimento
-            </button>
           </nav>
 
           {/* Actions Desk (Search, Admin trigger, mobile button) */}
@@ -186,36 +167,28 @@ export default function Navbar({
           >
             Home
           </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => handleNavClick(cat.nome)}
-              className="block w-full text-left px-3 py-2.5 rounded-md text-base font-medium hover:bg-[#1a1a1a] transition-all"
-              style={{ borderLeft: `3px solid ${cat.cor}`, paddingLeft: "12px", color: "#dddddd" }}
-            >
-              {cat.nome}
-            </button>
-          ))}
-          <button
-            onClick={() => {
-              navigate("noticias");
-              setMobileMenuOpen(false);
-            }}
-            className="block w-full text-left px-3 py-2.5 rounded-md text-base font-medium hover:bg-[#1a1a1a] transition-all"
-            style={{ borderLeft: `3px solid ${config.accentColor}`, paddingLeft: "12px", color: currentRoute.name === "noticias" ? config.accentColor : "#dddddd" }}
-          >
-            Notícias
-          </button>
-          <button
-            onClick={() => {
-              navigate("entretenimento");
-              setMobileMenuOpen(false);
-            }}
-            className="block w-full text-left px-3 py-2.5 rounded-md text-base font-medium hover:bg-[#1a1a1a] transition-all"
-            style={{ borderLeft: `3px solid ${config.accentColor}`, paddingLeft: "12px", color: currentRoute.name === "entretenimento" ? config.accentColor : "#dddddd" }}
-          >
-            Entretenimento
-          </button>
+          {categories.map((cat) => {
+            const belongsToNews = cat.nome.toUpperCase() === "NOTÍCIA" || cat.nome.toUpperCase() === "NOTÍCIAS";
+            const belongsToEnt = cat.nome.toUpperCase() === "ENTRETENIMENTO";
+            
+            const isActive = (currentRoute.name === "category" && currentRoute.param === cat.nome) ||
+                             (belongsToNews && currentRoute.name === "noticias") ||
+                             (belongsToEnt && currentRoute.name === "entretenimento");
+            return (
+              <button
+                key={cat.id}
+                onClick={() => handleNavClick(cat.nome)}
+                className="block w-full text-left px-3 py-2.5 rounded-md text-base font-medium hover:bg-[#1a1a1a] transition-all"
+                style={{ 
+                  borderLeft: `3px solid ${cat.cor}`, 
+                  paddingLeft: "12px", 
+                  color: isActive ? cat.cor : "#dddddd"
+                }}
+              >
+                {cat.nome}
+              </button>
+            );
+          })}
         </div>
       )}
     </header>
