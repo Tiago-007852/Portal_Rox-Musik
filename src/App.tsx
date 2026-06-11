@@ -27,6 +27,7 @@ import NewsPage from "./components/NewsPage";
 
 // Security credential admin gates
 import AdminLogin from "./components/AdminLogin";
+import { auth } from "./firebase";
 
 // Modular Admin subsections
 import AdminDashboard from "./components/AdminDashboard";
@@ -144,7 +145,14 @@ export default function App() {
         setCurrentRoute({ name: "home" });
       } else if (hash.startsWith("#/categoria/")) {
         const cat = decodeURIComponent(hash.replace("#/categoria/", ""));
-        setCurrentRoute({ name: "category", param: cat });
+        const uCat = cat.toUpperCase();
+        if (uCat === "NOTÍCIAS" || uCat === "NOTÍCIA") {
+          setCurrentRoute({ name: "noticias" });
+        } else if (uCat === "ENTRETENIMENTO") {
+          setCurrentRoute({ name: "entretenimento" });
+        } else {
+          setCurrentRoute({ name: "category", param: cat });
+        }
       } else if (hash.startsWith("#/post/")) {
         const id = decodeURIComponent(hash.replace("#/post/", ""));
         setCurrentRoute({ name: "post", param: id });
@@ -171,23 +179,40 @@ export default function App() {
   const navigate = (routeName: string, param?: string) => {
     // Save history (limited to max 20 entries)
     setRouteHistory((prev) => [...prev.slice(-19), currentRoute]);
-    setCurrentRoute({ name: routeName, param });
 
     // Set matching hashes for address bars
     if (routeName === "home") {
+      setCurrentRoute({ name: routeName, param });
       window.location.hash = "/";
     } else if (routeName === "category" && param) {
-      window.location.hash = `/categoria/${param}`;
+      const uParam = param.toUpperCase();
+      if (uParam === "NOTÍCIAS" || uParam === "NOTÍCIA") {
+        setCurrentRoute({ name: "noticias" });
+        window.location.hash = "/noticias";
+      } else if (uParam === "ENTRETENIMENTO") {
+        setCurrentRoute({ name: "entretenimento" });
+        window.location.hash = "/entretenimento";
+      } else {
+        setCurrentRoute({ name: routeName, param });
+        window.location.hash = `/categoria/${param}`;
+      }
     } else if (routeName === "post" && param) {
+      setCurrentRoute({ name: routeName, param });
       window.location.hash = `/post/${param}`;
     } else if (routeName === "noticias") {
+      setCurrentRoute({ name: routeName, param });
       window.location.hash = "/noticias";
     } else if (routeName === "entretenimento") {
+      setCurrentRoute({ name: routeName, param });
       window.location.hash = "/entretenimento";
     } else if (routeName === "admin") {
+      setCurrentRoute({ name: routeName, param });
       window.location.hash = "/admin";
     } else if (routeName === "not-found") {
+      setCurrentRoute({ name: routeName, param });
       window.location.hash = "/404";
+    } else {
+      setCurrentRoute({ name: routeName, param });
     }
   };
 
@@ -646,6 +671,23 @@ export default function App() {
 
                 {/* Admin Active Tab Content (Col span 9) */}
                 <div className="lg:col-span-9 bg-transparent">
+                  {!auth.currentUser && (
+                    <div className="mb-6 p-4 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-sans shadow-lg">
+                      <div className="flex items-center gap-3">
+                        <Lock size={18} className="shrink-0 text-orange-400" />
+                        <div>
+                          <p className="font-extrabold uppercase tracking-widest text-[10px] text-orange-300">Modo Local Ativo</p>
+                          <p className="text-zinc-400 mt-0.5 leading-relaxed">Você está conectado por credenciais locais. Para guardar na nuvem (sincronização ativa), termine sessão e faça login usando a sua <strong className="text-white">Conta Google</strong>.</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleLogout}
+                        className="bg-orange-500 hover:bg-orange-600 text-black font-black uppercase text-[9px] tracking-wider px-3.5 py-2 rounded-lg transition-all select-none self-start sm:self-center shrink-0 cursor-pointer shadow-md"
+                      >
+                        Sair e Usar Google
+                      </button>
+                    </div>
+                  )}
                   {renderAdminPageContent()}
                 </div>
 
