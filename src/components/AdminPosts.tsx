@@ -168,7 +168,7 @@ export default function AdminPosts({
       return;
     }
 
-    const postData = {
+    const rawPostData = {
       titulo,
       artista: artista.trim() || "Diversos",
       produtor: isMusic ? (produtor.trim() || undefined) : undefined,
@@ -183,6 +183,11 @@ export default function AdminPosts({
       autor: isMusic ? undefined : autor.trim(),
       conteudo: isMusic ? undefined : conteudo.trim()
     };
+
+    // Strip undefined fields — Firestore rejects them
+    const postData = Object.fromEntries(
+      Object.entries(rawPostData).filter(([_, v]) => v !== undefined)
+    );
 
     setSaving(true);
 
